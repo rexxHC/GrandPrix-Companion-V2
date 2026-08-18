@@ -5,9 +5,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Optional;
 
-import com.gpcompanion.auth.AuthenticationException;
-import com.gpcompanion.auth.DuplicateUserException;
-import com.gpcompanion.auth.UserCredentialStore;
 
 public class AuthService {
   private final UserCredentialStore store;

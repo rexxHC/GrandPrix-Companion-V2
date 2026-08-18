@@ -11,18 +11,21 @@ public class App {
             JFrame frame = new JFrame("Grand Prix Companion");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setSize(800, 600);
-            AuthService auth = new AuthService(new InMemoryUserStore());
-            try {
-                auth.register("admin", "admin");
-            } catch (DuplicateUserException e) {
-                // Ignore
-            }
-            LoginPanel login = new LoginPanel(auth, () -> {
+
+            UserCredentialStore store = new FileUserCredentialStore("users.txt");
+            SessionContext session = new SessionContext();
+            AuthService authService = new AuthService(store, session);
+            AuthController authController = new AuthController(authService, session);
+
+            LoginPanel login = new LoginPanel(authController, () -> {
                 frame.getContentPane().removeAll();
-                
+
+                String loggedInUsername = authController.getSession().getCurrentUser().getUsername();
+                frame.setTitle("Grand Prix Companion — " + loggedInUsername);
+
                 RaceLoader loader = new RaceLoader();
                 RaceEngine engine = new RaceEngine(loader.load("race_data.csv"));
-                
+
                 frame.add(new RaceUI(engine));
                 frame.revalidate();
                 frame.repaint();

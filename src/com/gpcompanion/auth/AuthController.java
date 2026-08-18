@@ -1,8 +1,4 @@
 package com.gpcompanion.auth;
-import com.gpcompanion.auth.AuthenticationException;
-import com.gpcompanion.auth.DuplicateUserException;
-import com.gpcompanion.auth.SessionContext;
-import com.gpcompanion.auth.AuthService;
 
 public class AuthController {
     private final AuthService authService;
@@ -19,5 +15,9 @@ public class AuthController {
 
     public void handleRegister(String username, String password) throws DuplicateUserException {
         authService.register(username, password);
+    }
+
+    public SessionContext getSession() {
+        return this.session;
     }
 }
