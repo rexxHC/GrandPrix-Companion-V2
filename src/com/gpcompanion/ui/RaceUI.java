@@ -7,12 +7,14 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.awt.geom.RoundRectangle2D;
 
 public class RaceUI extends JPanel {
     private boolean showGap = true;
 
-    public RaceUI(RaceEngine engine, SessionContext session, Runnable onLogout) {
+    public RaceUI(final RaceEngine engine, final SessionContext session, final Runnable onLogout) {
         Color bgColor = new Color(26, 26, 26);
         Color fgColor = new Color(220, 220, 220);
         Color neonYellow = new Color(200, 255, 0);
@@ -26,15 +28,15 @@ public class RaceUI extends JPanel {
         JLabel userLabel = new JLabel("Logged in as " + session.getCurrentUser().getUsername());
         userLabel.setForeground(Color.GRAY);
 
-        JLabel lapLabel = new JLabel("LAP " + engine.getCurrentLap() + "/" + engine.getTotalLaps());
+        final JLabel lapLabel = new JLabel("LAP " + engine.getCurrentLap() + "/" + engine.getTotalLaps());
         lapLabel.setForeground(fgColor);
 
-        JLabel statusLabel = new JLabel(" ");
+        final JLabel statusLabel = new JLabel(" ");
         statusLabel.setForeground(neonYellow);
 
-        JButton toggleGapBtn = new RoundedButton("INTERVAL / GAP", bgColor, fgColor, Color.GRAY);
-        JButton startBtn = new RoundedButton("START", neonYellow, Color.BLACK, neonYellow);
-        JButton pauseBtn = new RoundedButton("PAUSE", bgColor, fgColor, Color.GRAY);
+        final JButton toggleGapBtn = new RoundedButton("INTERVAL / GAP", bgColor, fgColor, Color.GRAY);
+        final JButton startBtn = new RoundedButton("START", neonYellow, Color.BLACK, neonYellow);
+        final JButton pauseBtn = new RoundedButton("PAUSE", bgColor, fgColor, Color.GRAY);
         JButton logoutBtn = new RoundedButton("LOGOUT", bgColor, fgColor, Color.GRAY);
         pauseBtn.setEnabled(false);
 
@@ -47,26 +49,28 @@ public class RaceUI extends JPanel {
         topPanel.add(logoutBtn);
         add(topPanel, BorderLayout.NORTH);
 
-        AbstractTableModel model = new AbstractTableModel() {
+        final AbstractTableModel model = new AbstractTableModel() {
             public int getRowCount() { return engine.getStandings().size(); }
             public int getColumnCount() { return 5; }
             public Object getValueAt(int r, int c) {
                 Standing s = engine.getStandings().get(r);
-                return switch(c) {
-                    case 0 -> s.getPosition();
-                    case 1 -> s.getDriver().getName();
-                    case 2 -> String.format("%.3f", s.getLastLapTime());
-                    case 3 -> showGap ? "+" + String.format("%.3f", s.getGapToLeader()) : "+" + String.format("%.3f", s.getIntervalToCarAhead());
-                    case 4 -> s.getCurrentTire();
-                    default -> "";
-                };
+                switch (c) {
+                    case 0: return s.getPosition();
+                    case 1: return s.getDriver().getName();
+                    case 2: return String.format("%.3f", s.getLastLapTime());
+                    case 3: return showGap
+                        ? "+" + String.format("%.3f", s.getGapToLeader())
+                        : "+" + String.format("%.3f", s.getIntervalToCarAhead());
+                    case 4: return s.getCurrentTire();
+                    default: return "";
+                }
             }
             public String getColumnName(int c) {
                 return new String[]{"#", "DRIVER", "LAST LAP", "GAP/INTERVAL", "TIRE"}[c];
             }
         };
 
-        JTable table = new JTable(model);
+        final JTable table = new JTable(model);
         table.setBackground(bgColor);
         table.setForeground(fgColor);
         table.setGridColor(new Color(100, 100, 100));
@@ -89,14 +93,17 @@ public class RaceUI extends JPanel {
         centerRenderer.setBackground(bgColor);
         centerRenderer.setForeground(fgColor);
 
+        final Color bgColorFinal = bgColor;
+        final Color fgColorFinal = fgColor;
+
         table.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable t, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
                 Component c = super.getTableCellRendererComponent(t, value, isSelected, hasFocus, row, col);
                 Standing s = engine.getStandings().get(row);
                 setHorizontalAlignment(JLabel.CENTER);
-                setBackground(bgColor);
-                setForeground(fgColor);
+                setBackground(bgColorFinal);
+                setForeground(fgColorFinal);
                 setBorder(BorderFactory.createMatteBorder(0, 6, 0, 0, s.getDriver().getTeamColor()));
                 return c;
             }
@@ -111,44 +118,57 @@ public class RaceUI extends JPanel {
         scroll.setBorder(BorderFactory.createEmptyBorder());
         add(scroll, BorderLayout.CENTER);
 
-        toggleGapBtn.addActionListener(e -> {
-            showGap = !showGap;
-            table.getColumnModel().getColumn(3).setHeaderValue(showGap ? "GAP" : "INTERVAL");
-            table.getTableHeader().repaint();
-            model.fireTableDataChanged();
-        });
-
-        Timer timer = new Timer(1000, e -> {
-            engine.advanceLap();
-            if (engine.isFinished()) {
-                ((Timer) e.getSource()).stop();
-                startBtn.setEnabled(false);
-                pauseBtn.setEnabled(false);
-                statusLabel.setText("RACE FINISHED");
+        toggleGapBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showGap = !showGap;
+                table.getColumnModel().getColumn(3).setHeaderValue(showGap ? "GAP" : "INTERVAL");
+                table.getTableHeader().repaint();
+                model.fireTableDataChanged();
             }
         });
 
-        startBtn.addActionListener(e -> {
-            timer.start();
-            startBtn.setEnabled(false);
-            pauseBtn.setEnabled(true);
+        final Timer timer = new Timer(1000, null);
+        timer.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                engine.advanceLap();
+                if (engine.isFinished()) {
+                    timer.stop();
+                    startBtn.setEnabled(false);
+                    pauseBtn.setEnabled(false);
+                    statusLabel.setText("RACE FINISHED");
+                }
+            }
         });
 
-        pauseBtn.addActionListener(e -> {
-            timer.stop();
-            startBtn.setEnabled(true);
-            pauseBtn.setEnabled(false);
+        startBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                timer.start();
+                startBtn.setEnabled(false);
+                pauseBtn.setEnabled(true);
+            }
         });
 
-        logoutBtn.addActionListener(e -> {
-            timer.stop();
-            session.clear();
-            onLogout.run();
+        pauseBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                timer.stop();
+                startBtn.setEnabled(true);
+                pauseBtn.setEnabled(false);
+            }
         });
 
-        engine.setListener(() -> {
-            lapLabel.setText("LAP " + engine.getCurrentLap() + "/" + engine.getTotalLaps());
-            model.fireTableDataChanged();
+        logoutBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                timer.stop();
+                session.clear();
+                onLogout.run();
+            }
+        });
+
+        engine.setListener(new Runnable() {
+            public void run() {
+                lapLabel.setText("LAP " + engine.getCurrentLap() + "/" + engine.getTotalLaps());
+                model.fireTableDataChanged();
+            }
         });
     }
 

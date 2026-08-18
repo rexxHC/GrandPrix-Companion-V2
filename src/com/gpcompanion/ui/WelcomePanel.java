@@ -2,9 +2,11 @@ package com.gpcompanion.ui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class WelcomePanel extends JPanel {
-    public WelcomePanel(Runnable onLoginClick, Runnable onRegisterClick) {
+    public WelcomePanel(final Runnable onLoginClick, final Runnable onRegisterClick) {
         Color bgColor = new Color(26, 26, 26);
         Color neonYellow = new Color(204, 255, 0);
 
@@ -26,7 +28,11 @@ public class WelcomePanel extends JPanel {
         loginBtn.setFocusPainted(false);
         loginBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
         loginBtn.setMaximumSize(new Dimension(200, 40));
-        loginBtn.addActionListener(e -> onLoginClick.run());
+        loginBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onLoginClick.run();
+            }
+        });
 
         JButton registerBtn = new JButton("Register");
         registerBtn.setBackground(Color.GRAY);
@@ -34,7 +40,11 @@ public class WelcomePanel extends JPanel {
         registerBtn.setFocusPainted(false);
         registerBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
         registerBtn.setMaximumSize(new Dimension(200, 40));
-        registerBtn.addActionListener(e -> onRegisterClick.run());
+        registerBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onRegisterClick.run();
+            }
+        });
 
         box.add(title);
         box.add(Box.createVerticalStrut(20));

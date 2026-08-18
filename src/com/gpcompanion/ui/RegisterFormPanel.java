@@ -3,9 +3,11 @@ package com.gpcompanion.ui;
 import com.gpcompanion.auth.*;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class RegisterFormPanel extends JPanel {
-    public RegisterFormPanel(AuthController authController, Runnable onBack) {
+    public RegisterFormPanel(final AuthController authController, final Runnable onBack) {
         Color bgColor = new Color(26, 26, 26);
         Color fieldBg = Color.DARK_GRAY;
         Color errorRed = new Color(255, 90, 90);
@@ -24,26 +26,28 @@ public class RegisterFormPanel extends JPanel {
         JLabel confirmLabel = new JLabel("Confirm Password:");
         confirmLabel.setForeground(Color.WHITE);
 
-        JTextField userField = new JTextField(15);
+        final JTextField userField = new JTextField(15);
         userField.setBackground(fieldBg);
         userField.setForeground(Color.WHITE);
         userField.setCaretColor(Color.WHITE);
         userField.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
 
-        JPasswordField passField = new JPasswordField(15);
+        final JPasswordField passField = new JPasswordField(15);
         passField.setBackground(fieldBg);
         passField.setForeground(Color.WHITE);
         passField.setCaretColor(Color.WHITE);
         passField.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
 
-        JPasswordField confirmField = new JPasswordField(15);
+        final JPasswordField confirmField = new JPasswordField(15);
         confirmField.setBackground(fieldBg);
         confirmField.setForeground(Color.WHITE);
         confirmField.setCaretColor(Color.WHITE);
         confirmField.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
 
-        JLabel statusLabel = new JLabel(" ");
+        final JLabel statusLabel = new JLabel(" ");
         statusLabel.setForeground(errorRed);
+        final Color errorRedFinal = errorRed;
+        final Color successGreenFinal = successGreen;
 
         JButton registerBtn = new JButton("Register");
         registerBtn.setBackground(Color.GRAY);
@@ -54,25 +58,34 @@ public class RegisterFormPanel extends JPanel {
         backBtn.setBackground(Color.GRAY);
         backBtn.setForeground(Color.WHITE);
         backBtn.setFocusPainted(false);
-        backBtn.addActionListener(e -> onBack.run());
-
-        registerBtn.addActionListener(e -> {
-            String username = userField.getText().trim();
-            String password = new String(passField.getPassword());
-            String confirm = new String(confirmField.getPassword());
-
-            if (!password.equals(confirm)) {
-                statusLabel.setForeground(errorRed);
-                statusLabel.setText("Passwords do not match.");
-                return;
+        backBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onBack.run();
             }
-            try {
-                authController.handleRegister(username, password);
-                statusLabel.setForeground(successGreen);
-                statusLabel.setText("Registration successful — go back and log in.");
-            } catch (DuplicateUserException | IllegalArgumentException ex) {
-                statusLabel.setForeground(errorRed);
-                statusLabel.setText(ex.getMessage());
+        });
+
+        registerBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String username = userField.getText().trim();
+                String password = new String(passField.getPassword());
+                String confirm = new String(confirmField.getPassword());
+
+                if (!password.equals(confirm)) {
+                    statusLabel.setForeground(errorRedFinal);
+                    statusLabel.setText("Passwords do not match.");
+                    return;
+                }
+                try {
+                    authController.handleRegister(username, password);
+                    statusLabel.setForeground(successGreenFinal);
+                    statusLabel.setText("Registration successful — go back and log in.");
+                } catch (DuplicateUserException ex) {
+                    statusLabel.setForeground(errorRedFinal);
+                    statusLabel.setText(ex.getMessage());
+                } catch (IllegalArgumentException ex) {
+                    statusLabel.setForeground(errorRedFinal);
+                    statusLabel.setText(ex.getMessage());
+                }
             }
         });
 

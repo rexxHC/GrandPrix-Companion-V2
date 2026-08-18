@@ -33,8 +33,11 @@ public class RaceLoader {
                 double lapTime = Double.parseDouble(parts[4].trim());
                 String tireCompound = parts[5].trim();
 
-                Driver driver = driversByName.computeIfAbsent(driverName,
-                    name -> new Driver(name, carNumber, teamColor));
+                Driver driver = driversByName.get(driverName);
+                if (driver == null) {
+                    driver = new Driver(driverName, carNumber, teamColor);
+                    driversByName.put(driverName, driver);
+                }
 
                 records.add(new LapRecord(lapNumber, lapTime, tireCompound, driver));
             }

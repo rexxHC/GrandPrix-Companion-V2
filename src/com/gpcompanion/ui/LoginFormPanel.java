@@ -3,9 +3,11 @@ package com.gpcompanion.ui;
 import com.gpcompanion.auth.*;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class LoginFormPanel extends JPanel {
-    public LoginFormPanel(AuthController authController, Runnable onSuccess, Runnable onBack) {
+    public LoginFormPanel(final AuthController authController, final Runnable onSuccess, final Runnable onBack) {
         Color bgColor = new Color(26, 26, 26);
         Color fieldBg = Color.DARK_GRAY;
         Color neonYellow = new Color(204, 255, 0);
@@ -22,19 +24,19 @@ public class LoginFormPanel extends JPanel {
         JLabel passLabel = new JLabel("Password:");
         passLabel.setForeground(Color.WHITE);
 
-        JTextField userField = new JTextField(15);
+        final JTextField userField = new JTextField(15);
         userField.setBackground(fieldBg);
         userField.setForeground(Color.WHITE);
         userField.setCaretColor(Color.WHITE);
         userField.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
 
-        JPasswordField passField = new JPasswordField(15);
+        final JPasswordField passField = new JPasswordField(15);
         passField.setBackground(fieldBg);
         passField.setForeground(Color.WHITE);
         passField.setCaretColor(Color.WHITE);
         passField.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
 
-        JLabel statusLabel = new JLabel(" ");
+        final JLabel statusLabel = new JLabel(" ");
         statusLabel.setForeground(errorRed);
 
         JButton loginBtn = new JButton("Login");
@@ -46,16 +48,24 @@ public class LoginFormPanel extends JPanel {
         backBtn.setBackground(Color.GRAY);
         backBtn.setForeground(Color.WHITE);
         backBtn.setFocusPainted(false);
-        backBtn.addActionListener(e -> onBack.run());
+        backBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                onBack.run();
+            }
+        });
 
-        loginBtn.addActionListener(e -> {
-            String username = userField.getText();
-            String password = new String(passField.getPassword());
-            try {
-                authController.handleLogin(username, password);
-                onSuccess.run();
-            } catch (AuthenticationException | IllegalArgumentException ex) {
-                statusLabel.setText(ex.getMessage());
+        loginBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String username = userField.getText();
+                String password = new String(passField.getPassword());
+                try {
+                    authController.handleLogin(username, password);
+                    onSuccess.run();
+                } catch (AuthenticationException ex) {
+                    statusLabel.setText(ex.getMessage());
+                } catch (IllegalArgumentException ex) {
+                    statusLabel.setText(ex.getMessage());
+                }
             }
         });
 
