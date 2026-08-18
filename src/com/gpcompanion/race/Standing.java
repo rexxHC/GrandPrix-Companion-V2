@@ -1,6 +1,8 @@
 package com.gpcompanion.race;
 
 public class Standing implements Comparable<Standing> {
+    public enum PositionChange { NONE, GAINED, LOST }
+
     private int position;
     private Driver driver;
     private double lastLapTime;
@@ -10,6 +12,7 @@ public class Standing implements Comparable<Standing> {
     private boolean personalBest;
     private boolean fastestLap;
     private double totalTime;
+    private PositionChange positionChange = PositionChange.NONE;
 
     public int getPosition() { return position; }
     public void setPosition(int position) { this.position = position; }
@@ -37,6 +40,9 @@ public class Standing implements Comparable<Standing> {
 
     public double getTotalTime() { return totalTime; }
     public void setTotalTime(double totalTime) { this.totalTime = totalTime; }
+
+    public PositionChange getPositionChange() { return positionChange; }
+    public void setPositionChange(PositionChange positionChange) { this.positionChange = positionChange; }
 
     @Override
     public int compareTo(Standing other) {

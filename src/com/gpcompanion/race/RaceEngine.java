@@ -77,11 +77,24 @@ public class RaceEngine {
                 newStandings.add(s);
             }
 
-            Collections.sort(newStandings);
+                       Collections.sort(newStandings);
 
             for (int i = 0; i < newStandings.size(); i++) {
                 Standing s = newStandings.get(i);
-                s.setPosition(i + 1);
+                int oldPosition = s.getPosition();
+                int newPosition = i + 1;
+
+                if (oldPosition <= 0) {
+                    s.setPositionChange(Standing.PositionChange.NONE);
+                } else if (newPosition < oldPosition) {
+                    s.setPositionChange(Standing.PositionChange.GAINED);
+                } else if (newPosition > oldPosition) {
+                    s.setPositionChange(Standing.PositionChange.LOST);
+                } else {
+                    s.setPositionChange(Standing.PositionChange.NONE);
+                }
+
+                s.setPosition(newPosition);
                 s.setGapToLeader(s.getTotalTime() - newStandings.get(0).getTotalTime());
                 s.setIntervalToCarAhead(i == 0 ? 0 : s.getTotalTime() - newStandings.get(i - 1).getTotalTime());
             }

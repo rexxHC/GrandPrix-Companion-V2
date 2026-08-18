@@ -22,20 +22,21 @@ public class RaceLoader {
                 if (line.isBlank()) continue;
 
                 String[] parts = line.split(",");
-                if (parts.length != 6) {
+                if (parts.length != 7) {
                     throw new RaceDataException("Malformed race data on line " + lineNumber + ": " + line);
                 }
 
                 int lapNumber = Integer.parseInt(parts[0].trim());
                 String driverName = parts[1].trim();
                 int carNumber = Integer.parseInt(parts[2].trim());
-                Color teamColor = Color.decode(parts[3].trim());
-                double lapTime = Double.parseDouble(parts[4].trim());
-                String tireCompound = parts[5].trim();
+                String teamName = parts[3].trim();
+                Color teamColor = Color.decode(parts[4].trim());
+                double lapTime = Double.parseDouble(parts[5].trim());
+                String tireCompound = parts[6].trim();
 
                 Driver driver = driversByName.get(driverName);
                 if (driver == null) {
-                    driver = new Driver(driverName, carNumber, teamColor);
+                    driver = new Driver(driverName, carNumber, teamName, teamColor);
                     driversByName.put(driverName, driver);
                 }
 

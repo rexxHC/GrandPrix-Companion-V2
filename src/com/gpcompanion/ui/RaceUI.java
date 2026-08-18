@@ -51,22 +51,23 @@ public class RaceUI extends JPanel {
 
         final AbstractTableModel model = new AbstractTableModel() {
             public int getRowCount() { return engine.getStandings().size(); }
-            public int getColumnCount() { return 5; }
+            public int getColumnCount() { return 6; }
             public Object getValueAt(int r, int c) {
                 Standing s = engine.getStandings().get(r);
                 switch (c) {
                     case 0: return s.getPosition();
                     case 1: return s.getDriver().getName();
-                    case 2: return String.format("%.3f", s.getLastLapTime());
-                    case 3: return showGap
+                    case 2: return s.getDriver().getTeamName();
+                    case 3: return String.format("%.3f", s.getLastLapTime());
+                    case 4: return showGap
                         ? "+" + String.format("%.3f", s.getGapToLeader())
                         : "+" + String.format("%.3f", s.getIntervalToCarAhead());
-                    case 4: return s.getCurrentTire();
+                    case 5: return s.getCurrentTire();
                     default: return "";
                 }
             }
             public String getColumnName(int c) {
-                return new String[]{"#", "DRIVER", "LAST LAP", "GAP/INTERVAL", "TIRE"}[c];
+                return new String[]{"#", "DRIVER", "TEAM", "LAST LAP", "GAP/INTERVAL", "TIRE"}[c];
             }
         };
 
@@ -82,12 +83,6 @@ public class RaceUI extends JPanel {
         table.getTableHeader().setForeground(Color.GRAY);
         table.getTableHeader().setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.DARK_GRAY));
 
-        DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
-        leftRenderer.setHorizontalAlignment(JLabel.LEFT);
-        leftRenderer.setBackground(bgColor);
-        leftRenderer.setForeground(fgColor);
-        leftRenderer.setBorder(new EmptyBorder(0, 15, 0, 0));
-
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
         centerRenderer.setBackground(bgColor);
@@ -95,6 +90,8 @@ public class RaceUI extends JPanel {
 
         final Color bgColorFinal = bgColor;
         final Color fgColorFinal = fgColor;
+        final Color gainedColor = new Color(20, 90, 40);
+        final Color lostColor = new Color(100, 25, 25);
 
         table.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
@@ -102,16 +99,28 @@ public class RaceUI extends JPanel {
                 Component c = super.getTableCellRendererComponent(t, value, isSelected, hasFocus, row, col);
                 Standing s = engine.getStandings().get(row);
                 setHorizontalAlignment(JLabel.CENTER);
-                setBackground(bgColorFinal);
+                setBackground(rowColor(s, bgColorFinal, gainedColor, lostColor));
                 setForeground(fgColorFinal);
                 setBorder(BorderFactory.createMatteBorder(0, 6, 0, 0, s.getDriver().getTeamColor()));
                 return c;
             }
         });
-        table.getColumnModel().getColumn(1).setCellRenderer(leftRenderer);
+        table.getColumnModel().getColumn(1).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable t, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+                Component c = super.getTableCellRendererComponent(t, value, isSelected, hasFocus, row, col);
+                Standing s = engine.getStandings().get(row);
+                setHorizontalAlignment(JLabel.LEFT);
+                setBackground(rowColor(s, bgColorFinal, gainedColor, lostColor));
+                setForeground(fgColorFinal);
+                setBorder(new EmptyBorder(0, 15, 0, 0));
+                return c;
+            }
+        });
         table.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
         table.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
-        table.getColumnModel().getColumn(4).setCellRenderer(new TireRenderer(bgColor));
+        table.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
+        table.getColumnModel().getColumn(5).setCellRenderer(new TireRenderer(bgColor));
 
         JScrollPane scroll = new JScrollPane(table);
         scroll.getViewport().setBackground(bgColor);
@@ -121,7 +130,7 @@ public class RaceUI extends JPanel {
         toggleGapBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 showGap = !showGap;
-                table.getColumnModel().getColumn(3).setHeaderValue(showGap ? "GAP" : "INTERVAL");
+                table.getColumnModel().getColumn(4).setHeaderValue(showGap ? "GAP" : "INTERVAL");
                 table.getTableHeader().repaint();
                 model.fireTableDataChanged();
             }
@@ -170,6 +179,14 @@ public class RaceUI extends JPanel {
                 model.fireTableDataChanged();
             }
         });
+    }
+
+    private static Color rowColor(Standing s, Color defaultColor, Color gainedColor, Color lostColor) {
+        switch (s.getPositionChange()) {
+            case GAINED: return gainedColor;
+            case LOST: return lostColor;
+            default: return defaultColor;
+        }
     }
 
     class RoundedButton extends JButton {
