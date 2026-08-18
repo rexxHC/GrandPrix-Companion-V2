@@ -1,9 +1,20 @@
 package com.gpcompanion.race;
 
 public class LapRecord {
-    public int lapNumber;
-    public double lapTime;
-    public String tireCompound;
-    public Driver driver;
-    public LapRecord(int n, double t, String c, Driver d) { lapNumber=n; lapTime=t; tireCompound=c; driver=d; }
+    private final int lapNumber;
+    private final double lapTime;
+    private final String tireCompound;
+    private final Driver driver;
+
+    public LapRecord(int lapNumber, double lapTime, String tireCompound, Driver driver) {
+        this.lapNumber = lapNumber;
+        this.lapTime = lapTime;
+        this.tireCompound = tireCompound;
+        this.driver = driver;
+    }
+
+    public int getLapNumber() { return lapNumber; }
+    public double getLapTime() { return lapTime; }
+    public String getTireCompound() { return tireCompound; }
+    public Driver getDriver() { return driver; }
 }

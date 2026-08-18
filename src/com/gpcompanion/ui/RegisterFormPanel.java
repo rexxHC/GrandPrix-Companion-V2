@@ -4,11 +4,10 @@ import com.gpcompanion.auth.*;
 import javax.swing.*;
 import java.awt.*;
 
-public class LoginPanel extends JPanel {
-    public LoginPanel(AuthController authController, Runnable onSuccess) {
+public class RegisterFormPanel extends JPanel {
+    public RegisterFormPanel(AuthController authController, Runnable onBack) {
         Color bgColor = new Color(26, 26, 26);
         Color fieldBg = Color.DARK_GRAY;
-        Color neonYellow = new Color(204, 255, 0);
         Color errorRed = new Color(255, 90, 90);
         Color successGreen = new Color(140, 255, 140);
 
@@ -22,7 +21,7 @@ public class LoginPanel extends JPanel {
         userLabel.setForeground(Color.WHITE);
         JLabel passLabel = new JLabel("Password:");
         passLabel.setForeground(Color.WHITE);
-        JLabel confirmLabel = new JLabel("Confirm (register only):");
+        JLabel confirmLabel = new JLabel("Confirm Password:");
         confirmLabel.setForeground(Color.WHITE);
 
         JTextField userField = new JTextField(15);
@@ -43,30 +42,19 @@ public class LoginPanel extends JPanel {
         confirmField.setCaretColor(Color.WHITE);
         confirmField.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
 
-        JLabel statusLabel = new JLabel(" "); // reserves height, avoids layout jump
+        JLabel statusLabel = new JLabel(" ");
         statusLabel.setForeground(errorRed);
-
-        JButton loginBtn = new JButton("Login");
-        loginBtn.setBackground(neonYellow);
-        loginBtn.setForeground(Color.BLACK);
-        loginBtn.setFocusPainted(false);
-
-        loginBtn.addActionListener(e -> {
-            String username = userField.getText();
-            String password = new String(passField.getPassword());
-            try {
-                authController.handleLogin(username, password);
-                onSuccess.run();
-            } catch (AuthenticationException | IllegalArgumentException ex) {
-                statusLabel.setForeground(errorRed);
-                statusLabel.setText(ex.getMessage());
-            }
-        });
 
         JButton registerBtn = new JButton("Register");
         registerBtn.setBackground(Color.GRAY);
         registerBtn.setForeground(Color.WHITE);
         registerBtn.setFocusPainted(false);
+
+        JButton backBtn = new JButton("Back");
+        backBtn.setBackground(Color.GRAY);
+        backBtn.setForeground(Color.WHITE);
+        backBtn.setFocusPainted(false);
+        backBtn.addActionListener(e -> onBack.run());
 
         registerBtn.addActionListener(e -> {
             String username = userField.getText().trim();
@@ -81,7 +69,7 @@ public class LoginPanel extends JPanel {
             try {
                 authController.handleRegister(username, password);
                 statusLabel.setForeground(successGreen);
-                statusLabel.setText("Registration successful — you can log in now.");
+                statusLabel.setText("Registration successful — go back and log in.");
             } catch (DuplicateUserException | IllegalArgumentException ex) {
                 statusLabel.setForeground(errorRed);
                 statusLabel.setText(ex.getMessage());
@@ -96,7 +84,7 @@ public class LoginPanel extends JPanel {
         form.add(confirmField);
         form.add(new JLabel());
         form.add(statusLabel);
-        form.add(loginBtn);
+        form.add(backBtn);
         form.add(registerBtn);
 
         add(form);

@@ -18,17 +18,17 @@ public class RaceEngine {
     public RaceEngine(List<LapRecord> records) {
         this.allLapRecords = records;
         for (LapRecord r : records) {
-            if (r.lapNumber > totalLaps) totalLaps = r.lapNumber;
+            if (r.getLapNumber() > totalLaps) totalLaps = r.getLapNumber();
         }
-        
+
         String[] tires = {"Soft", "Medium", "Hard"};
         int index = 0;
         for (LapRecord r : records) {
-            if (r.lapNumber == 1) {
+            if (r.getLapNumber() == 1) {
                 Standing s = new Standing();
-                s.driver = r.driver;
-                s.currentTire = tires[index % 3];
-                s.position = index + 1;
+                s.setDriver(r.getDriver());
+                s.setCurrentTire(tires[index % 3]);
+                s.setPosition(index + 1);
                 standings.add(s);
                 index++;
             }
@@ -37,51 +37,55 @@ public class RaceEngine {
 
     public void setListener(Runnable l) { listener = l; }
 
+    public boolean isFinished() {
+        return currentLap >= totalLaps;
+    }
+
     public void advanceLap() {
         if (currentLap < totalLaps) {
             currentLap++;
-            
+
             List<LapRecord> currentLapRecords = new ArrayList<>();
             for (LapRecord r : allLapRecords) {
-                if (r.lapNumber == currentLap) currentLapRecords.add(r);
+                if (r.getLapNumber() == currentLap) currentLapRecords.add(r);
             }
-            
+
             Map<Driver, Standing> standingMap = new HashMap<>();
             for (Standing s : standings) {
-                standingMap.put(s.driver, s);
+                standingMap.put(s.getDriver(), s);
             }
-            
+
             List<Standing> newStandings = new ArrayList<>();
-            
+
             for (LapRecord r : currentLapRecords) {
-                Standing s = standingMap.getOrDefault(r.driver, new Standing());
-                s.driver = r.driver;
-                s.totalTime += r.lapTime;
-                s.lastLapTime = r.lapTime;
-                
-                double pb = personalBests.getOrDefault(r.driver, Double.MAX_VALUE);
-                if (r.lapTime < pb) {
-                    personalBests.put(r.driver, r.lapTime);
-                    s.isPersonalBest = true;
+                Standing s = standingMap.getOrDefault(r.getDriver(), new Standing());
+                s.setDriver(r.getDriver());
+                s.setTotalTime(s.getTotalTime() + r.getLapTime());
+                s.setLastLapTime(r.getLapTime());
+
+                double pb = personalBests.getOrDefault(r.getDriver(), Double.MAX_VALUE);
+                if (r.getLapTime() < pb) {
+                    personalBests.put(r.getDriver(), r.getLapTime());
+                    s.setPersonalBest(true);
                 } else {
-                    s.isPersonalBest = false;
+                    s.setPersonalBest(false);
                 }
-                
-                if (r.lapTime < fastestLapOfRace) fastestLapOfRace = r.lapTime;
-                s.isFastestLap = r.lapTime <= fastestLapOfRace;
-                
+
+                if (r.getLapTime() < fastestLapOfRace) fastestLapOfRace = r.getLapTime();
+                s.setFastestLap(r.getLapTime() <= fastestLapOfRace);
+
                 newStandings.add(s);
             }
-            
+
             Collections.sort(newStandings);
-            
+
             for (int i = 0; i < newStandings.size(); i++) {
                 Standing s = newStandings.get(i);
-                s.position = i + 1;
-                s.gapToLeader = s.totalTime - newStandings.get(0).totalTime;
-                s.intervalToCarAhead = i == 0 ? 0 : s.totalTime - newStandings.get(i - 1).totalTime;
+                s.setPosition(i + 1);
+                s.setGapToLeader(s.getTotalTime() - newStandings.get(0).getTotalTime());
+                s.setIntervalToCarAhead(i == 0 ? 0 : s.getTotalTime() - newStandings.get(i - 1).getTotalTime());
             }
-            
+
             standings = newStandings;
             if (listener != null) listener.run();
         }

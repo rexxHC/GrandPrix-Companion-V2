@@ -1,38 +1,95 @@
 package com.gpcompanion.ui;
 
 import com.gpcompanion.auth.*;
+import com.gpcompanion.race.RaceDataException;
 import com.gpcompanion.race.RaceEngine;
 import com.gpcompanion.race.RaceLoader;
 import javax.swing.*;
 
 public class App {
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("Grand Prix Companion");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(800, 600);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                JFrame frame = new JFrame("Grand Prix Companion");
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.setSize(800, 600);
 
-            UserCredentialStore store = new FileUserCredentialStore("users.txt");
-            SessionContext session = new SessionContext();
-            AuthService authService = new AuthService(store, session);
-            AuthController authController = new AuthController(authService, session);
+                UserCredentialStore store = new FileUserCredentialStore("users.txt");
+                SessionContext session = new SessionContext();
+                AuthService authService = new AuthService(store, session);
+                AuthController authController = new AuthController(authService, session);
 
-            LoginPanel login = new LoginPanel(authController, () -> {
-                frame.getContentPane().removeAll();
+                showWelcome(frame, authController, session);
 
-                String loggedInUsername = authController.getSession().getCurrentUser().getUsername();
-                frame.setTitle("Grand Prix Companion — " + loggedInUsername);
-
-                RaceLoader loader = new RaceLoader();
-                RaceEngine engine = new RaceEngine(loader.load("race_data.csv"));
-
-                frame.add(new RaceUI(engine));
-                frame.revalidate();
-                frame.repaint();
-            });
-            frame.add(login);
-            frame.setLocationRelativeTo(null);
-            frame.setVisible(true);
+                frame.setLocationRelativeTo(null);
+                frame.setVisible(true);
+            }
         });
+    }
+
+    private static void swapScreen(JFrame frame, JPanel panel) {
+        frame.getContentPane().removeAll();
+        frame.add(panel);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    private static void showWelcome(final JFrame frame, final AuthController authController, final SessionContext session) {
+        frame.setTitle("Grand Prix Companion");
+        swapScreen(frame, new WelcomePanel(
+            new Runnable() {
+                public void run() {
+                    showLoginForm(frame, authController, session);
+                }
+            },
+            new Runnable() {
+                public void run() {
+                    showRegisterForm(frame, authController, session);
+                }
+            }
+        ));
+    }
+
+    private static void showLoginForm(final JFrame frame, final AuthController authController, final SessionContext session) {
+        swapScreen(frame, new LoginFormPanel(
+            authController,
+            new Runnable() {
+                public void run() {
+                    showRace(frame, authController, session);
+                }
+            },
+            new Runnable() {
+                public void run() {
+                    showWelcome(frame, authController, session);
+                }
+            }
+        ));
+    }
+
+    private static void showRegisterForm(final JFrame frame, final AuthController authController, final SessionContext session) {
+        swapScreen(frame, new RegisterFormPanel(
+            authController,
+            new Runnable() {
+                public void run() {
+                    showWelcome(frame, authController, session);
+                }
+            }
+        ));
+    }
+
+    private static void showRace(final JFrame frame, final AuthController authController, final SessionContext session) {
+        frame.setTitle("Grand Prix Companion — " + session.getCurrentUser().getUsername());
+        try {
+            RaceLoader loader = new RaceLoader();
+            RaceEngine engine = new RaceEngine(loader.load("race_data.csv"));
+            swapScreen(frame, new RaceUI(engine, session, new Runnable() {
+                public void run() {
+                    showWelcome(frame, authController, session);
+                }
+            }));
+        } catch (RaceDataException ex) {
+            JOptionPane.showMessageDialog(frame, "Could not load race data: " + ex.getMessage());
+            showWelcome(frame, authController, session);
+        }
     }
 }
