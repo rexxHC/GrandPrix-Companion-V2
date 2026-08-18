@@ -1,8 +1,21 @@
 package com.gpcompanion.auth;
 
 public class SessionContext {
-    private UserAccount current;
-    public void set(UserAccount u) { current = u; }
-    public boolean isLoggedIn() { return current != null; }
-    public void clear() { current = null; }
+    private UserAccount currentUser;
+
+    public void setCurrentUser(UserAccount account) {
+        this.currentUser = account;
+    }
+
+    public UserAccount getCurrentUser() {
+        return this.currentUser;
+    }
+
+    public boolean isLoggedIn() {
+        return this.currentUser != null;
+    }
+
+    public void clear() {
+        this.currentUser = null;
+    }
 }

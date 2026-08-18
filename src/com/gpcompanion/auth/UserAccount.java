@@ -1,8 +1,25 @@
 package com.gpcompanion.auth;
 
 public class UserAccount {
-    public final String username;
-    public final String passwordHash;
-    public final String salt;
-    public UserAccount(String u, String p, String s) { username=u; passwordHash=p; salt=s; }
+  private final String username;
+  private final String passwordHashed;
+  private final String salt;
+
+  public UserAccount(String username, String passwordHashed, String salt) {
+    this.username = username;
+    this.passwordHashed = passwordHashed;
+    this.salt = salt;
+  }
+
+  public String getUsername() {
+    return this.username;
+  }
+
+  public String getPasswordHashed() {
+    return this.passwordHashed;
+  }
+
+  public String getSalt() {
+    return this.salt;
+  }
 }
