@@ -1,0 +1,10 @@
+lapNumber,driverName,carNumber,r,g,b,lapTime,tireCompound
+1,Verstappen,1,0,0,255,85.2,S
+1,Hamilton,44,0,255,0,85.9,M
+1,Leclerc,16,255,0,0,86.5,S
+2,Verstappen,1,0,0,255,84.1,S
+2,Hamilton,44,0,255,0,83.9,M
+2,Leclerc,16,255,0,0,84.0,S
+3,Verstappen,1,0,0,255,84.0,S
+3,Hamilton,44,0,255,0,83.8,M
+3,Leclerc,16,255,0,0,84.1,S
